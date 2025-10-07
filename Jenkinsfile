@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY = "localhost:31000"
+        REGISTRY = "localhost:32100"
         APP_NAME = "user-login-app"
         KUBE_NAMESPACE = "user-login-app"
     }
