@@ -30,39 +30,45 @@ button { padding:8px 16px; }
 </form>
 
 <script>
-const BACKEND_URL = 'http://172.17.10.133:30600'; // NodePort backend URL
+const API_URL = '/api'; // Relative path for Ingress routing
 
+// Login
 const loginForm = document.getElementById('loginForm');
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     try {
-        const res = await fetch(`${BACKEND_URL}/api/login`, {
+        const res = await fetch(`${API_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
         const data = await res.json();
-        document.getElementById('loginMessage').innerText = res.ok ? "Login Success! Token: " + data.token : "Error: " + data.error;
+        document.getElementById('loginMessage').innerText = res.ok 
+            ? "Login Success! Token: " + data.token 
+            : "Error: " + data.error;
     } catch(err) {
         document.getElementById('loginMessage').innerText = "Network error: " + err;
     }
 });
 
+// Register
 const registerForm = document.getElementById('registerForm');
 registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('regUsername').value;
     const password = document.getElementById('regPassword').value;
     try {
-        const res = await fetch(`${BACKEND_URL}/api/register`, {
+        const res = await fetch(`${API_URL}/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
         const data = await res.json();
-        document.getElementById('regMessage').innerText = res.ok ? data.message : "Error: " + data.error;
+        document.getElementById('regMessage').innerText = res.ok 
+            ? data.message 
+            : "Error: " + data.error;
     } catch(err) {
         document.getElementById('regMessage').innerText = "Network error: " + err;
     }
