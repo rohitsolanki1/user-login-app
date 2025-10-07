@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/yourname/user-login-app.git'
+                git branch: 'main', url: 'https://github.com/rohitsolanki1/user-login-app.git'
             }
         }
 
