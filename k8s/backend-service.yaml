@@ -6,6 +6,7 @@ metadata:
 spec:
   selector:
     app: backend
-ports:
-  - port: 5000
-    targetPort: 5000
+  ports:
+    - protocol: TCP         # ✅ lowercase
+      port: 5000
+      targetPort: 5000
