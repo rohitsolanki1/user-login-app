@@ -1,45 +1,37 @@
 pipeline {
-  agent any
+    agent any
 
-  environment {
-    REGISTRY = "localhost:32000"
-    PROJECT = "user-login-app"
-    K8S_NS = "user-login-app"
-  }
-
-  stages {
-    stage('Checkout') {
-      steps { checkout scm }
+    environment {
+        REGISTRY = "localhost:31000"
+        APP_NAME = "user-login-app"
+        KUBE_NAMESPACE = "user-login-app"
     }
 
-    stage('Build Backend Image') {
-      steps {
-        dir('backend') {
-          sh "docker build -t ${REGISTRY}/${PROJECT}/backend:${BUILD_NUMBER} ."
-          sh "docker push ${REGISTRY}/${PROJECT}/backend:${BUILD_NUMBER}"
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/yourname/user-login-app.git'
+            }
         }
-      }
-    }
 
-    stage('Build Frontend Image') {
-      steps {
-        dir('frontend') {
-          sh "docker build -t ${REGISTRY}/${PROJECT}/frontend:${BUILD_NUMBER} ."
-          sh "docker push ${REGISTRY}/${PROJECT}/frontend:${BUILD_NUMBER}"
+        stage('Build Docker Images') {
+            steps {
+                sh 'docker build -t $REGISTRY/$APP_NAME-backend:latest backend/'
+                sh 'docker build -t $REGISTRY/$APP_NAME-frontend:latest frontend/'
+            }
         }
-      }
-    }
 
-    stage('Deploy to K8s') {
-      steps {
-        sh "microk8s.kubectl -n ${K8S_NS} set image deployment/backend backend=${REGISTRY}/${PROJECT}/backend:${BUILD_NUMBER} || microk8s.kubectl -n ${K8S_NS} rollout restart deployment/backend"
-        sh "microk8s.kubectl -n ${K8S_NS} set image deployment/frontend frontend=${REGISTRY}/${PROJECT}/frontend:${BUILD_NUMBER} || microk8s.kubectl -n ${K8S_NS} rollout restart deployment/frontend"
-      }
-    }
-  }
+        stage('Push to Local Registry') {
+            steps {
+                sh 'docker push $REGISTRY/$APP_NAME-backend:latest'
+                sh 'docker push $REGISTRY/$APP_NAME-frontend:latest'
+            }
+        }
 
-  post {
-    success { echo "Deployed ${BUILD_NUMBER}" }
-    failure { echo "Build failed" }
-  }
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'microk8s kubectl apply -f k8s/ -n $KUBE_NAMESPACE'
+            }
+        }
+    }
 }
