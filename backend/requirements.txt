@@ -1,0 +1,4 @@
+Flask==2.3.2
+PyJWT==2.8.0
+psycopg2-binary==2.9.6
+Flask-Cors==4.0.1
