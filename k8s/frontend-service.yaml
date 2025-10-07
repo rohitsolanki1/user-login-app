@@ -4,9 +4,10 @@ metadata:
   name: frontend
   namespace: user-login-app
 spec:
+  type: NodePort           # ✅ change from ClusterIP
   selector:
     app: frontend
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80
+    - protocol: TCP
+      port: 80
+      targetPort: 80
