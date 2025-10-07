@@ -3,35 +3,66 @@ pipeline {
 
     environment {
         REGISTRY = "localhost:32100"
-        APP_NAME = "user-login-app"
-        KUBE_NAMESPACE = "user-login-app"
+        PROJECT = "user-login-app"
+        BACKEND_IMAGE = "${REGISTRY}/${PROJECT}-backend:latest"
+        FRONTEND_IMAGE = "${REGISTRY}/${PROJECT}-frontend:latest"
+        NAMESPACE = "user-login-app"
     }
 
     stages {
-        stage('Checkout') {
+
+        stage('Build Backend') {
             steps {
-                git branch: 'main', url: 'https://github.com/rohitsolanki1/user-login-app.git'
+                script {
+                    sh "docker build -t ${BACKEND_IMAGE} ./backend"
+                }
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build Frontend') {
             steps {
-                sh 'docker build -t $REGISTRY/$APP_NAME-backend:latest backend/'
-                sh 'docker build -t $REGISTRY/$APP_NAME-frontend:latest frontend/'
+                script {
+                    sh "docker build -t ${FRONTEND_IMAGE} ./frontend"
+                }
             }
         }
 
-        stage('Push to Local Registry') {
+        stage('Push Backend Image') {
             steps {
-                sh 'docker push $REGISTRY/$APP_NAME-backend:latest'
-                sh 'docker push $REGISTRY/$APP_NAME-frontend:latest'
+                script {
+                    sh "docker push ${BACKEND_IMAGE}"
+                }
+            }
+        }
+
+        stage('Push Frontend Image') {
+            steps {
+                script {
+                    sh "docker push ${FRONTEND_IMAGE}"
+                }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'microk8s kubectl apply -f k8s/ -n $KUBE_NAMESPACE'
+                script {
+                    // Apply manifests (create/update Services, PVC, Secrets, Ingress)
+                    sh "microk8s kubectl apply -f k8s/ -n ${NAMESPACE}"
+
+                    // Force rollout restart to pull latest images
+                    sh "microk8s kubectl rollout restart deployment backend -n ${NAMESPACE}"
+                    sh "microk8s kubectl rollout restart deployment frontend -n ${NAMESPACE}"
+                }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment finished successfully! Visit the app to see changes."
+        }
+        failure {
+            echo "Deployment failed. Check the logs."
         }
     }
 }
