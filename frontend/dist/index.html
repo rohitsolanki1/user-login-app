@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>User Login App</title>
 <style>
-body { font-family: Arial; display:flex; justify-content:center; align-items:center; height:100vh; }
+body { font-family: Arial; display:flex; justify-content:center; align-items:center; height:100vh; gap:50px; }
 form { border:1px solid #ccc; padding:20px; border-radius:5px; }
 input { display:block; margin:10px 0; padding:8px; width:200px; }
 button { padding:8px 16px; }
@@ -30,18 +30,24 @@ button { padding:8px 16px; }
 </form>
 
 <script>
+const BACKEND_URL = 'http://172.17.10.133:30600'; // NodePort backend URL
+
 const loginForm = document.getElementById('loginForm');
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-    document.getElementById('loginMessage').innerText = res.ok ? "Login Success!" : "Error: " + data.error;
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        document.getElementById('loginMessage').innerText = res.ok ? "Login Success! Token: " + data.token : "Error: " + data.error;
+    } catch(err) {
+        document.getElementById('loginMessage').innerText = "Network error: " + err;
+    }
 });
 
 const registerForm = document.getElementById('registerForm');
@@ -49,13 +55,17 @@ registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('regUsername').value;
     const password = document.getElementById('regPassword').value;
-    const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-    document.getElementById('regMessage').innerText = res.ok ? data.message : "Error: " + data.error;
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        document.getElementById('regMessage').innerText = res.ok ? data.message : "Error: " + data.error;
+    } catch(err) {
+        document.getElementById('regMessage').innerText = "Network error: " + err;
+    }
 });
 </script>
 
